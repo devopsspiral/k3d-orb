@@ -5,6 +5,7 @@ version: 2.1
 orbs:
   k3d: devopsspiral/k3d@<<pipeline.parameters.dev-orb-version>>
   orb-tools: circleci/orb-tools@9.0
+  python: circleci/python@0.3.2
 
 # Pipeline parameters
 parameters:
