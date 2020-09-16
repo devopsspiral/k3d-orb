@@ -6,7 +6,7 @@ usage:
     python: circleci/python@0.3.2
     k3d: devopsspiral/k3d@0.1.0
   jobs:
-    test-k3d-expose-via-proxy:
+    test-k3d-expose-via-lb:
       #can be any docker executor
       executor: python/default
       steps:
@@ -31,4 +31,4 @@ usage:
   workflows:
     main:
       jobs:
-        - test-k3d-expose-via-proxy
+        - test-k3d-expose-via-lb
