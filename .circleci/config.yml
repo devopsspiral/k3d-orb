@@ -39,7 +39,7 @@ jobs:
       - k3d/k3d-up:
           cluster-name: circleci-k8s-1
       - k3d/k3d-run:
-          name: Expose service via kubectl proxy
+          step-name: Expose service via kubectl proxy
           command: |
             helm repo add stable https://kubernetes-charts.storage.googleapis.com
             helm install grafana stable/grafana

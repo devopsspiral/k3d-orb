@@ -3,6 +3,7 @@ parameters:
   step-name:
     description: Name of the run step
     type: string
+    default: ""
   command:
     description: Command using docker, k3d, helm, kubectl
     type: string
