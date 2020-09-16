@@ -17,7 +17,7 @@ steps:
           docker run --rm --name kubectl -e KUBECONFIG=\$K3D_KUBECONFIG \
           --network container:k3d-\${K3D_CLUSTER}-serverlb \
           --volumes-from kubeconfig \
-          bitnami/kubectl:\$KUBECTL_VERSION \$@
+          bitnami/kubectl:\${KUBECTL_VERSION:-latest} \$@
         }
 
         helm () {
@@ -28,7 +28,7 @@ steps:
           -v helm_cache:/root/.cache/helm \
           -v helm_config:/root/.config/helm \
           -v helm_data:/root/.local/share/helm \
-          alpine/helm:\$HELM_VERSION \$@
+          alpine/helm:\${HELM_VERSION:-latest}  \$@
         }
 
         proxy () {
@@ -36,6 +36,6 @@ steps:
           --network container:k3d-\${K3D_CLUSTER}-serverlb \
           --volumes-from kubeconfig \
           --volumes-from repo \
-          bitnami/kubectl:\$KUBECTL_VERSION \$@
+          bitnami/kubectl:\${KUBECTL_VERSION:-latest}  \$@
         }
         EOF
