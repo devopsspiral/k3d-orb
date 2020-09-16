@@ -1,0 +1,33 @@
+description: Starts k8s (k3d/k3s) cluster
+parameters:
+  cluster-name:
+    description: Name for the k3d cluster
+    type: string
+    default: myk3d
+  k3s-version:
+    description: Image tag of K3s container
+    type: string
+    default: NotSet
+  agents:
+    description: Number of agents
+    type: integer
+    default: 1
+steps:
+  - run:
+      name: Setup k8s
+      command: |
+        . helpers.sh
+        wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+        if [ "<<parameters.k3s-version>>" != "NotSet" ]; then
+          k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
+        else
+          k3d cluster create -a <<parameters.agents>> <<parameters.cluster-name>> --wait
+        fi
+        export KUBECONFIG=$(k3d kubeconfig write <<parameters.cluster-name>>)
+        chmod a+r $KUBECONFIG
+        sed -i "s#0.0.0.0.*#0.0.0.0:6443#g" $KUBECONFIG
+        if [ -n "$K3D_USING_HELPERS" ]; then
+          docker cp $KUBECONFIG kubeconfig:/.kube/<<parameters.cluster-name>>
+          sed -i "s#K3D_CLUSTER=.*#K3D_CLUSTER=<<parameters.cluster-name>>#g" helpers.sh
+          sed -i "s#K3D_KUBECONFIG=.*#K3D_KUBECONFIG=/.kube/<<parameters.cluster-name>>#g" helpers.sh
+        fi
