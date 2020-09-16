@@ -1,6 +1,6 @@
 description: Wrapper around run command with helpers included
 parameters:
-  name:
+  step-name:
     description: Name of the run step
     type: string
   command:
@@ -12,7 +12,7 @@ parameters:
       kubectl version
 steps:
   - run:
-      name: <<parameters.name>>
+      name: <<parameters.step-name>>
       command: |
         . helpers.sh
         <<parameters.command>>
