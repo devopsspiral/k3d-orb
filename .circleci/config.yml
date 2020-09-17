@@ -112,6 +112,40 @@ jobs:
             kubectl version | grep '1.16.15'
             # Server version
             kubectl version | grep '1.16.14+k3s1'
+  test-switching-clusters:
+    executor: k3d/default
+    steps:
+      - setup_remote_docker
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+          k3s-version: v1.16.15-k3s1
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-2
+          k3s-version: v1.16.10-k3s1
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-3
+          k3s-version: v1.17.12-k3s1
+          agents: 3
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            # Server version - by default using most recently created cluster
+            kubectl version | grep 'v1.17.12-k3s1'
+      - k3d/k3d-use:
+          cluster-name: circleci-k8s-2
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            # Server version - by default using most recently created cluster
+            kubectl version | grep 'v1.16.10-k3s1'
+      - k3d/k3d-use:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            # Server version - by default using most recently created cluster
+            kubectl version | grep 'v1.16.15-k3s1'
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
