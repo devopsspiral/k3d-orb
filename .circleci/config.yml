@@ -162,7 +162,7 @@ jobs:
           step-name: Build own container and deploy on k8s
           command: |
             docker build -t pyserver -f sample/own_image/Dockerfile .
-            k3d image import pyserver:latest
+            k3d image import -c circleci-k8s-1 pyserver:latest
             kubectl apply -f /repo/sample/own_image/
             export SERVICE_IP=$(kubectl get svc --namespace default pyserver -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             # Test if service is exposed
