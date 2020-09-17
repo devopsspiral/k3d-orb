@@ -65,7 +65,7 @@ jobs:
           step-name: Expose service via loadbalancer
           command: |
             helm repo add stable https://kubernetes-charts.storage.googleapis.com
-            helm install grafana stable/grafana -f /repo/grafana/with_lb.yaml
+            helm install grafana stable/grafana -f /repo/sample/grafana/with_lb.yaml
             sleep 30
             export SERVICE_IP=$(kubectl get svc --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
@@ -87,7 +87,7 @@ jobs:
           step-name: Expose service via ingress
           command: |
             helm repo add stable https://kubernetes-charts.storage.googleapis.com
-            helm install grafana stable/grafana -f /repo/grafana/with_ingress.yaml
+            helm install grafana stable/grafana -f /repo/sample/grafana/with_ingress.yaml
             sleep 45
             export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
@@ -95,7 +95,7 @@ jobs:
   test-k3d-versions:
     executor: k3d/default
     environment:
-      - KUBECTL_VERSION: 1.16
+      - KUBECTL_VERSION: 1.16.15
       - HELM_VERSION: 3.3.1
     steps:
       - setup_remote_docker
@@ -107,8 +107,11 @@ jobs:
           step-name: Check versions
           command: |
             k3d --version
-            helm version
-            kubectl version
+            helm version | grep 'v3.3.1'
+            # Client version
+            kubectl version | grep '1.16.15'
+            # Server version
+            kubectl version | grep '1.16.14+k3s1'
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:

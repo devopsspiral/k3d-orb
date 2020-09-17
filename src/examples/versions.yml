@@ -7,10 +7,9 @@ usage:
     k3d: devopsspiral/k3d@0.1.0
   jobs:
     test-k3d-versions:
-      #can be any docker executor
       executor: k3d/default
       environment:
-        - KUBECTL_VERSION: 1.16
+        - KUBECTL_VERSION: 1.16.15
         - HELM_VERSION: 3.3.1
       steps:
         - setup_remote_docker
@@ -22,8 +21,11 @@ usage:
             step-name: Check versions
             command: |
               k3d --version
-              helm version
-              kubectl version
+              helm version | grep 'v3.3.1'
+              # Client version
+              kubectl version | grep '1.16.15'
+              # Server version
+              kubectl version | grep '1.16.14+k3s1'
   workflows:
     main:
       jobs:
