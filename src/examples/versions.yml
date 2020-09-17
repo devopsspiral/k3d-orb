@@ -6,7 +6,7 @@ usage:
     python: circleci/python@0.3.2
     k3d: devopsspiral/k3d@0.1.0
   jobs:
-    versions:
+    test-k3d-versions:
       #can be any docker executor
       executor: k3d/default
       environment:
