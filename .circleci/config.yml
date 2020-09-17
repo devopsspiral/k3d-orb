@@ -193,6 +193,7 @@ workflows:
       - test-k3d-expose-via-lb
       - test-k3d-expose-via-ingress
       - test-k3d-versions
+      - test-switching-clusters
 
       # publish a semver version of the orb. relies on
       # the commit subject containing the text "[semver:patch|minor|major|skip]"
