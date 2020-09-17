@@ -132,7 +132,8 @@ jobs:
       - k3d/k3d-run:
           step-name: Check versions
           command: |
-            # Server version - by default using most recently created cluster
+            # Orb by default is using most recently created cluster,
+            # so no need to k3d-use to use circleci-k8s-3 cluster
             kubectl version | grep 'v1.17.12+k3s1'
       - k3d/k3d-use:
           cluster-name: circleci-k8s-2
@@ -145,7 +146,7 @@ jobs:
       - k3d/k3d-run:
           step-name: Check versions
           command: |
-            kubectl version | grep 'v1.16.15+k3s1'
+            kubectl version | grep 'v1.16.15+vk3s1'
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
