@@ -25,21 +25,19 @@ usage:
             step-name: Check versions
             command: |
               # Server version - by default using most recently created cluster
-              kubectl version | grep 'v1.17.12-k3s1'
+              kubectl version | grep 'v1.17.12+k3s1'
         - k3d/k3d-use:
             cluster-name: circleci-k8s-2
         - k3d/k3d-run:
             step-name: Check versions
             command: |
-              # Server version - by default using most recently created cluster
-              kubectl version | grep 'v1.16.10-k3s1'
+              kubectl version | grep 'v1.16.10+k3s1'
         - k3d/k3d-use:
             cluster-name: circleci-k8s-1
         - k3d/k3d-run:
             step-name: Check versions
             command: |
-              # Server version - by default using most recently created cluster
-              kubectl version | grep 'v1.16.15-k3s1'
+              kubectl version | grep 'v1.16.15+k3s1'
   workflows:
     main:
       jobs:
