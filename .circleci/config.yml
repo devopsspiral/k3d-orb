@@ -48,67 +48,67 @@ jobs:
             proxy --namespace default port-forward $POD_NAME 3000
             # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
             docker run --rm -it --network container:proxy busybox /bin/sh -c "wget 0.0.0.0:3000; cat index.html" | grep Grafana
-    test-k3d-expose-via-lb:
-      #can be any docker executor
-      executor: python/default
-      steps:
-        - setup_remote_docker
-        - checkout
-        # - python/load-cache
-        # - python/install-deps
-        # - python/save-cache
-        # - etc.
-        - k3d/k3d-helpers
-        - k3d/k3d-up:
-            cluster-name: circleci-k8s-1
-        - k3d/k3d-run:
-            step-name: Expose service via loadbalancer
-            command: |
-              helm repo add stable https://kubernetes-charts.storage.googleapis.com
-              helm install grafana stable/grafana -f /repo/grafana/with_lb.yaml
-              sleep 30
-              export SERVICE_IP=$(kubectl get svc --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
-              docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:3000; cat index.html" | grep Grafana
-    test-k3d-expose-via-ingress:
-      #can be any docker executor
-      executor: python/default
-      steps:
-        - setup_remote_docker
-        - checkout
-        # - python/load-cache
-        # - python/install-deps
-        # - python/save-cache
-        # - etc.
-        - k3d/k3d-helpers
-        - k3d/k3d-up:
-            cluster-name: circleci-k8s-1
-        - k3d/k3d-run:
-            step-name: Expose service via ingress
-            command: |
-              helm repo add stable https://kubernetes-charts.storage.googleapis.com
-              helm install grafana stable/grafana -f /repo/grafana/with_ingress.yaml
-              sleep 45
-              export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
-              docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "echo '${INGRESS_IP}  chart-example.local' >> /etc/hosts; wget http://chart-example.local/; cat index.html" | grep Grafana
-    test-k3d-versions:
-      executor: k3d/default
-      environment:
-        - KUBECTL_VERSION: 1.16
-        - HELM_VERSION: 3.3.1
-      steps:
-        - setup_remote_docker
-        - k3d/k3d-helpers
-        - k3d/k3d-up:
-            cluster-name: circleci-k8s-1
-            k3s-version: v1.16.14-k3s1
-        - k3d/k3d-run:
-            step-name: Check versions
-            command: |
-              k3d --version
-              helm version
-              kubectl version
+  test-k3d-expose-via-lb:
+    #can be any docker executor
+    executor: python/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      # - python/load-cache
+      # - python/install-deps
+      # - python/save-cache
+      # - etc.
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Expose service via loadbalancer
+          command: |
+            helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            helm install grafana stable/grafana -f /repo/grafana/with_lb.yaml
+            sleep 30
+            export SERVICE_IP=$(kubectl get svc --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:3000; cat index.html" | grep Grafana
+  test-k3d-expose-via-ingress:
+    #can be any docker executor
+    executor: python/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      # - python/load-cache
+      # - python/install-deps
+      # - python/save-cache
+      # - etc.
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Expose service via ingress
+          command: |
+            helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            helm install grafana stable/grafana -f /repo/grafana/with_ingress.yaml
+            sleep 45
+            export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "echo '${INGRESS_IP}  chart-example.local' >> /etc/hosts; wget http://chart-example.local/; cat index.html" | grep Grafana
+  test-k3d-versions:
+    executor: k3d/default
+    environment:
+      - KUBECTL_VERSION: 1.16
+      - HELM_VERSION: 3.3.1
+    steps:
+      - setup_remote_docker
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+          k3s-version: v1.16.14-k3s1
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            k3d --version
+            helm version
+            kubectl version
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
