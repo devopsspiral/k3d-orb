@@ -146,7 +146,7 @@ jobs:
       - k3d/k3d-run:
           step-name: Check versions
           command: |
-            kubectl version | grep 'v1.16.15+vk3s1'
+            kubectl version | grep 'v1.16.15+k3s1'
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
