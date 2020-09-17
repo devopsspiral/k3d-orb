@@ -23,6 +23,7 @@ usage:
             step-name: Expose service via loadbalancer
             command: |
               helm repo add stable https://kubernetes-charts.storage.googleapis.com
+              # Notice repo content available at /repo/ automatically
               helm install grafana stable/grafana -f /repo/grafana/with_lb.yaml
               sleep 30
               export SERVICE_IP=$(kubectl get svc --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')

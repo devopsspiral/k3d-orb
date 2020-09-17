@@ -65,6 +65,7 @@ jobs:
           step-name: Expose service via loadbalancer
           command: |
             helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            # Notice repo content available at /repo/ automatically
             helm install grafana stable/grafana -f /repo/sample/grafana/with_lb.yaml
             sleep 30
             export SERVICE_IP=$(kubectl get svc --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -87,6 +88,7 @@ jobs:
           step-name: Expose service via ingress
           command: |
             helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            # Notice repo content available at /repo/ automatically
             helm install grafana stable/grafana -f /repo/sample/grafana/with_ingress.yaml
             sleep 45
             export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -147,6 +149,25 @@ jobs:
           step-name: Check versions
           command: |
             kubectl version | grep 'v1.16.15+k3s1'
+  test-k3d-expose-own-image:
+    #can be any docker executor
+    executor: k3d/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Build own container and deploy on k8s
+          command: |
+            docker build -t pyserver -f sample/own_image/Dockerfile .
+            k3d image import pyserver
+            kubectl apply -f /repo/sample/own_image/
+            export SERVICE_IP=$(kubectl get svc --namespace default pyserver -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            # Test if service is exposed
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:9000; cat index.html"
+
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
@@ -193,6 +214,7 @@ workflows:
       - test-k3d-expose-via-ingress
       - test-k3d-versions
       - test-switching-clusters
+      - test-k3d-expose-own-image
 
       # publish a semver version of the orb. relies on
       # the commit subject containing the text "[semver:patch|minor|major|skip]"

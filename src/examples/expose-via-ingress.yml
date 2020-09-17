@@ -23,6 +23,7 @@ usage:
             step-name: Expose service via ingress
             command: |
               helm repo add stable https://kubernetes-charts.storage.googleapis.com
+              # Notice repo content available at /repo/ automatically
               helm install grafana stable/grafana -f /repo/sample/grafana/with_ingress.yaml
               sleep 45
               export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyserver-deployment
+  labels:
+    app: pyserver
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pyserver
+  template:
+    metadata:
+      labels:
+        app: pyserver
+    spec:
+      containers:
+      - name: pyserver
+        image: pyserver
+        ports:
+        - containerPort: 9000
