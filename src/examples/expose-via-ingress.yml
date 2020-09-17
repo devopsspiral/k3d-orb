@@ -22,13 +22,14 @@ usage:
         - k3d/k3d-run:
             step-name: Expose service via ingress
             command: |
-              helm repo add stable https://kubernetes-charts.storage.googleapis.com
-              helm install grafana stable/grafana -f /repo/grafana/with_ingress.yaml
-              sleep 45
-              export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
-              docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "echo '${INGRESS_IP}  chart-example.local' >> /etc/hosts; wget http://chart-example.local/; cat index.html" | grep Grafana
-
+            helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            helm install grafana stable/grafana -f /repo/sample/grafana/with_ingress.yaml
+            sleep 45
+            export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox \
+            /bin/sh -c "echo '${INGRESS_IP}  chart-example.local' >> /etc/hosts; \
+            wget http://chart-example.local/; cat index.html" | grep Grafana
   workflows:
     main:
       jobs:

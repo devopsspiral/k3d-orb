@@ -91,7 +91,9 @@ jobs:
             sleep 45
             export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
-            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "echo '${INGRESS_IP}  chart-example.local' >> /etc/hosts; wget http://chart-example.local/; cat index.html" | grep Grafana
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox \
+            /bin/sh -c "echo '${INGRESS_IP}  chart-example.local' >> /etc/hosts; \
+            wget http://chart-example.local/; cat index.html" | grep Grafana
   test-k3d-versions:
     executor: k3d/default
     environment:
