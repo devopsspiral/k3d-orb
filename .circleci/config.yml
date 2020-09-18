@@ -171,7 +171,22 @@ jobs:
             kubectl get svc
             # Test if service is exposed
             docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:9000; cat index.html"
-
+  test-k8s-api-reaching:
+    #can be any docker executor
+    executor: k3d/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Reach K8s API directly
+          command: |
+            # This is exactly how helm and kubectl is used in this orb
+            docker run --rm --name kubectl -e KUBECONFIG=$K3D_KUBECONFIG \
+            --network container:k3d-${K3D_CLUSTER}-serverlb \
+            --volumes-from kubeconfig get pods
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
@@ -219,6 +234,7 @@ workflows:
       - test-k3d-versions
       - test-switching-clusters
       - test-k3d-expose-own-image
+      - test-k8s-api-reaching
 
       # publish a semver version of the orb. relies on
       # the commit subject containing the text "[semver:patch|minor|major|skip]"

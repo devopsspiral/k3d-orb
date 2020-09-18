@@ -20,6 +20,7 @@ usage:
             command: |
               docker build -t pyserver -f sample/own_image/Dockerfile .
               k3d image import -c circleci-k8s-1 pyserver:latest
+              # use imagePullPolicy: Never
               kubectl apply -f /repo/sample/own_image/
               sleep 15
               export SERVICE_IP=$(kubectl get svc --namespace default pyserver-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
