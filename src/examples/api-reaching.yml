@@ -1,0 +1,28 @@
+description: >
+  Build own container and deploy on k8s
+usage:
+  version: 2.1
+  orbs:
+    python: circleci/python@0.3.2
+    k3d: devopsspiral/k3d@0.1.0
+  jobs:
+    test-k8s-api-reaching:
+      #can be any docker executor
+      executor: k3d/default
+      steps:
+        - setup_remote_docker
+        - checkout
+        - k3d/k3d-helpers
+        - k3d/k3d-up:
+            cluster-name: circleci-k8s-1
+        - k3d/k3d-run:
+            step-name: Reach K8s API directly
+            command: |
+              # This is exactly how helm and kubectl is used in this orb reaching to 0.0.0.0:6443
+              docker run --rm -it --name kubectl -e KUBECONFIG=$K3D_KUBECONFIG \
+              --network container:k3d-${K3D_CLUSTER}-serverlb \
+              --volumes-from kubeconfig bitnami/kubectl get pods | grep 'No resources found'
+  workflows:
+    main:
+      jobs:
+        - test-k3d-expose-via-lb

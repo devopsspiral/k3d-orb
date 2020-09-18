@@ -1,0 +1,11 @@
+description: Destroy k8s (k3d/k3s) cluster
+parameters:
+  cluster-name:
+    description: Name for the k3d cluster
+    type: string
+    default: myk3d
+steps:
+  - run:
+      name: Remove k8s
+      command: |
+        k3d cluster delete <<parameters.cluster-name>>

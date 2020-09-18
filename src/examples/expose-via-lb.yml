@@ -1,0 +1,36 @@
+description: >
+  Expose service via loadbalancer
+usage:
+  version: 2.1
+  orbs:
+    python: circleci/python@0.3.2
+    k3d: devopsspiral/k3d@0.1.0
+  jobs:
+    test-k3d-expose-via-lb:
+      #can be any docker executor
+      executor: python/default
+      steps:
+        - setup_remote_docker
+        - checkout
+        # - python/load-cache
+        # - python/install-deps
+        # - python/save-cache
+        # - etc.
+        - k3d/k3d-helpers
+        - k3d/k3d-up:
+            cluster-name: circleci-k8s-1
+        - k3d/k3d-run:
+            step-name: Expose service via loadbalancer
+            command: |
+              helm repo add stable https://kubernetes-charts.storage.googleapis.com
+              # Notice repo content available at /repo/ automatically
+              helm install grafana stable/grafana -f /repo/grafana/with_lb.yaml
+              sleep 30
+              export SERVICE_IP=$(kubectl get svc --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+              # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
+              docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:3000; cat index.html" | grep Grafana
+
+  workflows:
+    main:
+      jobs:
+        - test-k3d-expose-via-lb

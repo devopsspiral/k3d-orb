@@ -1,0 +1,12 @@
+description: Switches context to particular cluster
+parameters:
+  cluster-name:
+    description: Name for the k3d cluster
+    type: string
+    default: myk3d
+steps:
+  - run:
+      name: Set target cluster
+      command: |
+        sed -i "s#K3D_CLUSTER=.*#K3D_CLUSTER=<<parameters.cluster-name>>#g" helpers.sh
+        sed -i "s#K3D_KUBECONFIG=.*#K3D_KUBECONFIG=/.kube/<<parameters.cluster-name>>#g" helpers.sh

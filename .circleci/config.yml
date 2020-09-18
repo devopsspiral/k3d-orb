@@ -1,18 +1,255 @@
 version: 2.1
 
+# add your orb below, to be used in integration tests (note: a @dev:alpha
+# release must exist.);
+orbs:
+  k3d: devopsspiral/k3d@<<pipeline.parameters.dev-orb-version>>
+  orb-tools: circleci/orb-tools@9.0
+  python: circleci/python@0.3.2
+
+# Pipeline parameters
+parameters:
+  # These pipeline parameters are required by the "trigger-integration-tests-workflow"
+  # job, by default.
+  run-integration-tests:
+    type: boolean
+    default: false
+  dev-orb-version:
+    type: string
+    default: "dev:alpha"
+
 jobs:
-  getting-started:
-    docker:
-      - image: circleci/node
+  # This job is an example of an integration testing job.
+  # This job should execute a command from your orb and verify
+  # the output is as expected, otherwise the job should fail.
+  #
+  # Rename this job and add more as needed.
+  #
+  test-k3d-expose-via-proxy:
+    #can be any docker executor
+    executor: python/default
     steps:
-      - run:
-          name: Getting Started
+      - setup_remote_docker
+      - checkout
+      # - python/load-cache
+      # - python/install-deps
+      # - python/save-cache
+      # - etc.
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Expose service via kubectl proxy
           command: |
-            echo "Your orb is now building on CircleCI"
-            echo "This is a temporary configuration file. Continue with the orb-init.sh script and follow the README.md to publish your orb."
+            helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            helm install grafana stable/grafana
+            sleep 30
+            export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+            proxy --namespace default port-forward $POD_NAME 3000
+            # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
+            docker run --rm -it --network container:proxy busybox /bin/sh -c "wget 0.0.0.0:3000; cat index.html" | grep Grafana
+  test-k3d-expose-via-lb:
+    #can be any docker executor
+    executor: python/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      # - python/load-cache
+      # - python/install-deps
+      # - python/save-cache
+      # - etc.
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Expose service via loadbalancer
+          command: |
+            helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            # Notice repo content available at /repo/ automatically
+            helm install grafana stable/grafana -f /repo/sample/grafana/with_lb.yaml
+            sleep 30
+            export SERVICE_IP=$(kubectl get svc --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:3000; cat index.html" | grep Grafana
+  test-k3d-expose-via-ingress:
+    #can be any docker executor
+    executor: python/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      # - python/load-cache
+      # - python/install-deps
+      # - python/save-cache
+      # - etc.
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Expose service via ingress
+          command: |
+            helm repo add stable https://kubernetes-charts.storage.googleapis.com
+            # Notice repo content available at /repo/ automatically
+            helm install grafana stable/grafana -f /repo/sample/grafana/with_ingress.yaml
+            sleep 45
+            export INGRESS_IP=$(kubectl get ing --namespace default grafana -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            # Test if Grafana login page is reachable, exit code 1 means grep didn't found match
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox \
+            /bin/sh -c "echo '${INGRESS_IP}  chart-example.local' >> /etc/hosts; \
+            wget http://chart-example.local/; cat index.html" | grep Grafana
+  test-k3d-versions:
+    executor: k3d/default
+    environment:
+      - KUBECTL_VERSION: 1.16.15
+      - HELM_VERSION: 3.3.1
+    steps:
+      - setup_remote_docker
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+          k3s-version: v1.16.14-k3s1
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            k3d --version
+            helm version | grep 'v3.3.1'
+            # Client version
+            kubectl version | grep '1.16.15'
+            # Server version
+            kubectl version | grep '1.16.14+k3s1'
+  test-switching-clusters:
+    executor: k3d/default
+    steps:
+      - setup_remote_docker
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+          k3s-version: v1.16.15-k3s1
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-2
+          k3s-version: v1.16.10-k3s1
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-3
+          k3s-version: v1.17.12-k3s1
+          agents: 3
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            # Orb by default is using most recently created cluster,
+            # so no need to k3d-use to use circleci-k8s-3 cluster
+            kubectl version | grep 'v1.17.12+k3s1'
+      - k3d/k3d-use:
+          cluster-name: circleci-k8s-2
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            kubectl version | grep 'v1.16.10+k3s1'
+      - k3d/k3d-use:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Check versions
+          command: |
+            kubectl version | grep 'v1.16.15+k3s1'
+  test-k3d-expose-own-image:
+    #can be any docker executor
+    executor: k3d/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Build own container and deploy on k8s
+          command: |
+            docker build -t pyserver -f sample/own_image/Dockerfile .
+            k3d image import -c circleci-k8s-1 pyserver:latest
+            # use imagePullPolicy: Never
+            kubectl apply -f /repo/sample/own_image/
+            sleep 15
+            export SERVICE_IP=$(kubectl get svc --namespace default pyserver-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            kubectl get pods
+            kubectl get svc
+            # Test if service is exposed
+            docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:9000; cat index.html"
+  test-k8s-api-reaching:
+    #can be any docker executor
+    executor: k3d/default
+    steps:
+      - setup_remote_docker
+      - checkout
+      - k3d/k3d-helpers
+      - k3d/k3d-up:
+          cluster-name: circleci-k8s-1
+      - k3d/k3d-run:
+          step-name: Reach K8s API directly
+          command: |
+            # This is exactly how helm and kubectl is used in this orb reaching to 0.0.0.0:6443
+            docker run --rm -it --name kubectl -e KUBECONFIG=$K3D_KUBECONFIG \
+            --network container:k3d-${K3D_CLUSTER}-serverlb \
+            --volumes-from kubeconfig bitnami/kubectl get pods | grep 'No resources found'
 workflows:
-  setup:
+  # This `lint-pack_validate_publish-dev` workflow will run on any commit.
+  lint_pack-validate_publish-dev:
+    unless: << pipeline.parameters.run-integration-tests >>
     jobs:
-      - getting-started
+      - orb-tools/lint
+      # pack your orb YAML files to a single orb.yml
+      # validate the orb.yml file to ensure it is well-formed
+      - orb-tools/pack:
+          requires:
+            - orb-tools/lint
 
+      # release dev version of orb, for testing & possible publishing.
+      # orb will be published as dev:alpha and dev:${CIRCLE_SHA1:0:7}.
+      # requires a CircleCI API token to be stored as CIRCLE_TOKEN (default)
+      # https://circleci.com/docs/2.0/managing-api-tokens
+      # store CIRCLE_TOKEN as a project env var or Contexts resource
+      # if using Contexts, add your context below
+      - orb-tools/publish-dev:
+          orb-name: devopsspiral/k3d
+          requires:
+            - orb-tools/pack
 
+      # trigger an integration workflow to test the
+      # dev:${CIRCLE_SHA1:0:7} version of your orb
+      - orb-tools/trigger-integration-tests-workflow:
+          name: trigger-integration-dev
+          requires:
+            - orb-tools/publish-dev
+
+  # This `integration-tests_prod-release` workflow will only run
+  # when the run-integration-tests pipeline parameter is set to true.
+  # It is meant to be triggered by the "trigger-integration-tests-workflow"
+  # job, and run tests on <your orb>@dev:${CIRCLE_SHA1:0:7}.
+  integration-tests_prod-release:
+    when: << pipeline.parameters.run-integration-tests >>
+    jobs:
+      # your integration test jobs go here: essentially, run all your orb's
+      # jobs and commands to ensure they behave as expected. or, run other
+      # integration tests of your choosing
+
+      - test-k3d-expose-via-proxy
+      - test-k3d-expose-via-lb
+      - test-k3d-expose-via-ingress
+      - test-k3d-versions
+      - test-switching-clusters
+      - test-k3d-expose-own-image
+      - test-k8s-api-reaching
+
+      # publish a semver version of the orb. relies on
+      # the commit subject containing the text "[semver:patch|minor|major|skip]"
+      # as that will determine whether a patch, minor or major
+      # version will be published or if publishing should
+      # be skipped.
+      # e.g. [semver:patch] will cause a patch version to be published.
+      - orb-tools/dev-promote-prod-from-commit-subject:
+          orb-name: devopsspiral/k3d
+
+          add-pr-comment: false
+          fail-if-semver-not-indicated: true
+          publish-version-tag: false
+          requires:
+            - test-k3d-expose-via-proxy
+          filters:
+            branches:
+              only: master

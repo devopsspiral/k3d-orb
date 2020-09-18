@@ -1,0 +1,19 @@
+description: Wrapper around run command with helpers included
+parameters:
+  step-name:
+    description: Name of the run step
+    type: string
+    default: ""
+  command:
+    description: Command using docker, k3d, helm, kubectl
+    type: string
+    default: |
+      k3d --version
+      helm version
+      kubectl version
+steps:
+  - run:
+      name: <<parameters.step-name>>
+      command: |
+        . helpers.sh
+        <<parameters.command>>
