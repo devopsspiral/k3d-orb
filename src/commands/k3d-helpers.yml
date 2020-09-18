@@ -17,6 +17,7 @@ steps:
           docker run --rm --name kubectl -e KUBECONFIG=\$K3D_KUBECONFIG \
           --network container:k3d-\${K3D_CLUSTER}-serverlb \
           --volumes-from kubeconfig \
+          --volumes-from repo \
           bitnami/kubectl:\${KUBECTL_VERSION:-latest} \$@
         }
 
