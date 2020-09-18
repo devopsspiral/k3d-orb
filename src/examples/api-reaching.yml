@@ -19,10 +19,9 @@ usage:
             step-name: Reach K8s API directly
             command: |
               # This is exactly how helm and kubectl is used in this orb
-              docker run --rm --name kubectl -e KUBECONFIG=$K3D_KUBECONFIG \
+              docker run --rm -it --name kubectl -e KUBECONFIG=$K3D_KUBECONFIG \
               --network container:k3d-${K3D_CLUSTER}-serverlb \
               --volumes-from kubeconfig bitnami/kubectl get pods | grep 'No resources found'
-          bitnami/kubectl:
   workflows:
     main:
       jobs:
