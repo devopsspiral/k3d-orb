@@ -16,6 +16,7 @@ spec:
     spec:
       containers:
       - name: pyserver
-        image: pyserver
+        imagePullPolicy: Never
+        image: pyserver:latest
         ports:
         - containerPort: 9000
