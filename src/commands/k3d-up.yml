@@ -7,7 +7,7 @@ parameters:
   k3s-version:
     description: Image tag of K3s container
     type: string
-    default: NotSet
+    default: latest
   agents:
     description: Number of agents
     type: integer
@@ -18,7 +18,7 @@ steps:
       command: |
         . helpers.sh
         wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
-        if [ "<<parameters.k3s-version>>" != "NotSet" ]; then
+        if [ "<<parameters.k3s-version>>" != "latest" ]; then
           k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
         else
           k3d cluster create -a <<parameters.agents>> <<parameters.cluster-name>> --wait

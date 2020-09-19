@@ -3,7 +3,6 @@ description: >
 usage:
   version: 2.1
   orbs:
-    python: circleci/python@0.3.2
     k3d: devopsspiral/k3d@0.1.0
   jobs:
     test-k8s-api-reaching:
@@ -25,4 +24,4 @@ usage:
   workflows:
     main:
       jobs:
-        - test-k3d-expose-via-lb
+        - test-k8s-api-reaching

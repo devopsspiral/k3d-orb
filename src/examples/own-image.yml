@@ -3,7 +3,6 @@ description: >
 usage:
   version: 2.1
   orbs:
-    python: circleci/python@0.3.2
     k3d: devopsspiral/k3d@0.1.0
   jobs:
     test-k3d-expose-own-image:
@@ -24,12 +23,10 @@ usage:
               kubectl apply -f /repo/sample/own_image/
               sleep 15
               export SERVICE_IP=$(kubectl get svc --namespace default pyserver-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              kubectl get pods
-              kubectl get svc
               # Test if service is exposed
               docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:9000; cat index.html"
 
   workflows:
     main:
       jobs:
-        - test-k3d-expose-via-lb
+        - test-k3d-expose-own-image
