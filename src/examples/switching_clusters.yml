@@ -1,0 +1,45 @@
+description: >
+  Pass K3s, helm and kubectl versions
+usage:
+  version: 2.1
+  orbs:
+    python: circleci/python@0.3.2
+    k3d: devopsspiral/k3d@0.1.0
+  jobs:
+    test-switching-clusters:
+      executor: k3d/default
+      steps:
+        - setup_remote_docker
+        - k3d/k3d-helpers
+        - k3d/k3d-up:
+            cluster-name: circleci-k8s-1
+            k3s-version: v1.16.15-k3s1
+        - k3d/k3d-up:
+            cluster-name: circleci-k8s-2
+            k3s-version: v1.16.10-k3s1
+        - k3d/k3d-up:
+            cluster-name: circleci-k8s-3
+            k3s-version: v1.17.12-k3s1
+            agents: 3
+        - k3d/k3d-run:
+            step-name: Check versions
+            command: |
+              # Orb by default is using most recently created cluster,
+              # so no need to k3d-use to use circleci-k8s-3 cluster
+              kubectl version | grep 'v1.17.12+k3s1'
+        - k3d/k3d-use:
+            cluster-name: circleci-k8s-2
+        - k3d/k3d-run:
+            step-name: Check versions
+            command: |
+              kubectl version | grep 'v1.16.10+k3s1'
+        - k3d/k3d-use:
+            cluster-name: circleci-k8s-1
+        - k3d/k3d-run:
+            step-name: Check versions
+            command: |
+              kubectl version | grep 'v1.16.15+k3s1'
+  workflows:
+    main:
+      jobs:
+        - versions
