@@ -4,4 +4,5 @@ description: >
   Orb for creating and using kubernetes cluster in your pipelines. Based on K3d/K3s project.
 
 display:
+  home_url: https://k3d.io/
   source_url: "https://www.github.com/devopsspiral/k3d-orb"

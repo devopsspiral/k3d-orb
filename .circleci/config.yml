@@ -167,8 +167,6 @@ jobs:
             kubectl apply -f /repo/sample/own_image/
             sleep 15
             export SERVICE_IP=$(kubectl get svc --namespace default pyserver-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-            kubectl get pods
-            kubectl get svc
             # Test if service is exposed
             docker run --rm -it --network k3d-${K3D_CLUSTER} busybox /bin/sh -c "wget ${SERVICE_IP}:9000; cat index.html"
   test-k8s-api-reaching:
@@ -250,6 +248,12 @@ workflows:
           publish-version-tag: false
           requires:
             - test-k3d-expose-via-proxy
+            - test-k3d-expose-via-lb
+            - test-k3d-expose-via-ingress
+            - test-k3d-versions
+            - test-switching-clusters
+            - test-k3d-expose-own-image
+            - test-k8s-api-reaching
           filters:
             branches:
               only: master
