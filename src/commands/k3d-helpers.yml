@@ -11,8 +11,8 @@ steps:
         docker volume create  helm_data
         cat \<<EOF > helpers.sh
         export K3D_USING_HELPERS=true
-        export K3D_CLUSTER=latest
-        export K3D_KUBECONFIG=latest
+        export K3D_CLUSTER=NotSet
+        export K3D_KUBECONFIG=NotSet
         kubectl () {
           docker run --rm --name kubectl -e KUBECONFIG=\$K3D_KUBECONFIG \
           --network container:k3d-\${K3D_CLUSTER}-serverlb \
