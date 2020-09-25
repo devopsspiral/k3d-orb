@@ -185,29 +185,29 @@ jobs:
             docker run --rm -it --name kubectl -e KUBECONFIG=$K3D_KUBECONFIG \
             --network container:k3d-${K3D_CLUSTER}-serverlb \
             --volumes-from kubeconfig bitnami/kubectl get pods | grep 'No resources found'
-  test-different-ports:
-    #can be any docker executor
-    executor: k3d/default
-    steps:
-      - setup_remote_docker
-      - checkout
-      - k3d/k3d-helpers
-      - k3d/k3d-up:
-          cluster-name: circleci-k8s-2
-          k3s-version: v1.16.14-k3s1
-          api-port: 6444
-      - k3d/k3d-up:
-          cluster-name: circleci-k8s-1
-      - k3d/k3d-run:
-          step-name: Connect to multiple clusters on different ports
-          command: |
-            # Connect to two docker networks
-            docker create --rm --name kubectl \
-            --network container:k3d-circleci-k8s-1-serverlb \
-            --entrypoint /bin/sh \
-            --volumes-from kubeconfig bitnami/kubectl bash -c 'KUBECONFIG=/.kube/circleci-k8s-1 kubectl version; KUBECONFIG=/.kube/circleci-k8s-2 kubectl version '
-            docker network connect container:k3d-circleci-k8s-2-serverlb kubectl
-            docker start -a kubectl
+  # test-different-ports:
+  #   #can be any docker executor
+  #   executor: k3d/default
+  #   steps:
+  #     - setup_remote_docker
+  #     - checkout
+  #     - k3d/k3d-helpers
+  #     - k3d/k3d-up:
+  #         cluster-name: circleci-k8s-2
+  #         k3s-version: v1.16.14-k3s1
+  #         api-port: 6444
+  #     - k3d/k3d-up:
+  #         cluster-name: circleci-k8s-1
+  #     - k3d/k3d-run:
+  #         step-name: Connect to multiple clusters on different ports
+  #         command: |
+  #           # Connect to two docker networks
+  #           docker create --rm --name kubectl \
+  #           --network container:k3d-circleci-k8s-1-serverlb \
+  #           --entrypoint /bin/sh \
+  #           --volumes-from kubeconfig bitnami/kubectl bash -c 'KUBECONFIG=/.kube/circleci-k8s-1 kubectl version; KUBECONFIG=/.kube/circleci-k8s-2 kubectl version '
+  #           docker network connect container:k3d-circleci-k8s-2-serverlb kubectl
+  #           docker start -a kubectl
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
@@ -256,7 +256,7 @@ workflows:
       - test-switching-clusters
       - test-k3d-expose-own-image
       - test-k8s-api-reaching
-      - test-different-ports
+      # - test-different-ports
 
       # publish a semver version of the orb. relies on
       # the commit subject containing the text "[semver:patch|minor|major|skip]"
