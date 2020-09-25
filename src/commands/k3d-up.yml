@@ -23,9 +23,9 @@ steps:
         . helpers.sh
         wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
         if [ "<<parameters.k3s-version>>" != "latest" ]; then
-          k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> --api-port <<parameters.api-port>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
+          k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> --k3s-server-arg "--https-listen-port=<<parameters.api-port>>" -a <<parameters.agents>> <<parameters.cluster-name>> --wait
         else
-          k3d cluster create --api-port <<parameters.api-port>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
+          k3d cluster create --k3s-server-arg "--https-listen-port=<<parameters.api-port>>" -a <<parameters.agents>> <<parameters.cluster-name>> --wait
         fi
         export KUBECONFIG=$(k3d kubeconfig write <<parameters.cluster-name>>)
         chmod a+r $KUBECONFIG
