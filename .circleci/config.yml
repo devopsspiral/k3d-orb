@@ -202,12 +202,12 @@ jobs:
           step-name: Connect to multiple clusters on different ports
           command: |
             # Connect to two docker networks
-            docker create --rm --name kubectl \
+            docker create --rm -it --name kubectl-multi \
             --network container:k3d-circleci-k8s-1-serverlb \
             --entrypoint /bin/sh \
             --volumes-from kubeconfig bitnami/kubectl bash -c 'KUBECONFIG=/.kube/circleci-k8s-1 kubectl version; KUBECONFIG=/.kube/circleci-k8s-2 kubectl version '
-            docker network connect container:k3d-circleci-k8s-2-serverlb kubectl
-            docker start -a kubectl
+            docker network connect container:k3d-circleci-k8s-2-serverlb kubectl-multi
+            docker start -a kubectl-multi
 workflows:
   # This `lint-pack_validate_publish-dev` workflow will run on any commit.
   lint_pack-validate_publish-dev:
