@@ -1,9 +1,9 @@
 description: >
-  Build own container and deploy on k8s
+  Reach K8s API directly
 usage:
   version: 2.1
   orbs:
-    k3d: devopsspiral/k3d@0.1.0
+    k3d: devopsspiral/k3d@0.1.3
   jobs:
     test-k8s-api-reaching:
       #can be any docker executor

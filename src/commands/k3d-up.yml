@@ -12,6 +12,10 @@ parameters:
     description: Number of agents
     type: integer
     default: 1
+  api-port:
+    description: API port
+    type: integer
+    default: 6443
 steps:
   - run:
       name: Setup k8s
@@ -19,13 +23,13 @@ steps:
         . helpers.sh
         wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
         if [ "<<parameters.k3s-version>>" != "latest" ]; then
-          k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
+          k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> --api-port <<parameters.api-port>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
         else
-          k3d cluster create -a <<parameters.agents>> <<parameters.cluster-name>> --wait
+          k3d cluster create --api-port <<parameters.api-port>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
         fi
         export KUBECONFIG=$(k3d kubeconfig write <<parameters.cluster-name>>)
         chmod a+r $KUBECONFIG
-        sed -i "s#0.0.0.0.*#0.0.0.0:6443#g" $KUBECONFIG
+        sed -i "s#0.0.0.0.*#0.0.0.0:<<parameters.api-port>>#g" $KUBECONFIG
         if [ -n "$K3D_USING_HELPERS" ]; then
           docker cp $KUBECONFIG kubeconfig:/.kube/<<parameters.cluster-name>>
           sed -i "s#K3D_CLUSTER=.*#K3D_CLUSTER=<<parameters.cluster-name>>#g" helpers.sh
