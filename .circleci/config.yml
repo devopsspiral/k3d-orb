@@ -205,7 +205,7 @@ jobs:
             docker run --rm -it --name kubectl-multi \
             --network container:k3d-circleci-k8s-1-serverlb \
             --entrypoint /bin/sh \
-            --volumes-from kubeconfig bitnami/kubectl /bin/bash -c 'KUBECONFIG=/.kube/circleci-k8s-1 kubectl version; #KUBECONFIG=/.kube/circleci-k8s-2 kubectl version '
+            --volumes-from kubeconfig bitnami/kubectl /bin/sh -c 'KUBECONFIG=/.kube/circleci-k8s-1 kubectl version; #KUBECONFIG=/.kube/circleci-k8s-2 kubectl version '
             # docker network connect container:k3d-circleci-k8s-2-serverlb kubectl-multi
             # docker start -a kubectl-multi
 workflows:
