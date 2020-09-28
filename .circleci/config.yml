@@ -256,7 +256,6 @@ workflows:
       - test-switching-clusters
       - test-k3d-expose-own-image
       - test-k8s-api-reaching
-      - test-different-ports
 
       # publish a semver version of the orb. relies on
       # the commit subject containing the text "[semver:patch|minor|major|skip]"
