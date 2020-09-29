@@ -248,7 +248,6 @@ workflows:
       # your integration test jobs go here: essentially, run all your orb's
       # jobs and commands to ensure they behave as expected. or, run other
       # integration tests of your choosing
-
       - test-k3d-expose-via-proxy
       - test-k3d-expose-via-lb
       - test-k3d-expose-via-ingress
