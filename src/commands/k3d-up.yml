@@ -19,6 +19,7 @@ steps:
         . helpers.sh
         wget -q https://raw.githubusercontent.com/rancher/k3d/main/install.sh
         sed -i "s#/releases/latest#/releases/v4.0.0#g" install.sh
+        cat install.sh | bash
         if [ "<<parameters.k3s-version>>" != "latest" ]; then
           k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
         else
