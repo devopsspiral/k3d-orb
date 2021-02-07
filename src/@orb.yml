@@ -1,7 +1,7 @@
 version: 2.1
 
 description: >
-  Orb for creating and using kubernetes cluster in your pipelines. Based on K3d/K3s project. 
+  Orb for creating and using kubernetes cluster in your pipelines. Based on K3d/K3s project.
 
 display:
   home_url: https://k3d.io/
