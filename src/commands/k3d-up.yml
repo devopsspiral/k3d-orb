@@ -5,9 +5,13 @@ parameters:
     type: string
     default: myk3d
   k3s-version:
-    description: Image tag of K3s container
+    description: Image tag of K3s container (determines k8s version)
     type: string
     default: latest
+  k3s-bin-version:
+    description: K3s binary version (currently > v4.0.0 is not supported)
+    type: string
+    default: v4.0.0
   agents:
     description: Number of agents
     type: integer
@@ -18,7 +22,7 @@ steps:
       command: |
         . helpers.sh
         wget -q https://raw.githubusercontent.com/rancher/k3d/main/install.sh
-        sed -i "s#/releases/latest#/releases/v4.0.0#g" install.sh
+        sed -i "s#/releases/latest#/releases/<<parameters.k3s-bin-version>>#g" install.sh
         cat install.sh | bash
         if [ "<<parameters.k3s-version>>" != "latest" ]; then
           k3d cluster create -i docker.io/rancher/k3s:<<parameters.k3s-version>> -a <<parameters.agents>> <<parameters.cluster-name>> --wait
