@@ -115,7 +115,7 @@ jobs:
             # Client version
             kubectl version | grep '1.16.15'
             # Server version
-            K8S_VERSION=$(echo ${K3D_CLUSTER_VERSION:1} | $cut -d "-" -f1)
+            K8S_VERSION=$(echo ${K3D_CLUSTER_VERSION:1} | cut -d "-" -f1)
             kubectl version | grep "$K8S_VERSION"
   test-switching-clusters:
     executor: k3d/default
