@@ -12,6 +12,9 @@ steps:
         cat \<<EOF > helpers.sh
         export K3D_USING_HELPERS=true
         export K3D_CLUSTER=NotSet
+        export K3D_CLUSTER_VERSION=NotSet
+        export K3S_BIN_VERSION=NotSet
+        export K3D_CLUSTER_AGENTS=NotSet
         export K3D_KUBECONFIG=NotSet
         kubectl () {
           docker run --rm --name kubectl -e KUBECONFIG=\$K3D_KUBECONFIG \

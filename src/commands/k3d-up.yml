@@ -35,5 +35,8 @@ steps:
         if [ -n "$K3D_USING_HELPERS" ]; then
           docker cp $KUBECONFIG kubeconfig:/.kube/<<parameters.cluster-name>>
           sed -i "s#K3D_CLUSTER=.*#K3D_CLUSTER=<<parameters.cluster-name>>#g" helpers.sh
+          sed -i "s#K3D_CLUSTER_VERSION=.*#K3D_CLUSTER_VERSION=<<parameters.k3s-version>>#g" helpers.sh
+          sed -i "s#K3S_BIN_VERSION=.*#K3S_BIN_VERSION=<<parameters.k3s-bin-version>>#g" helpers.sh
+          sed -i "s#K3D_CLUSTER_AGENTS=.*#K3D_CLUSTER_AGENTS=<<parameters.agents>>#g" helpers.sh
           sed -i "s#K3D_KUBECONFIG=.*#K3D_KUBECONFIG=/.kube/<<parameters.cluster-name>>#g" helpers.sh
         fi
