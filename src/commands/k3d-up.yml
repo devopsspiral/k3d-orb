@@ -31,7 +31,7 @@ steps:
         fi
         export KUBECONFIG=$(k3d kubeconfig write <<parameters.cluster-name>>)
         chmod a+r $KUBECONFIG
-        sed -i "s#0.0.0.0.*#0.0.0.0:6443#g" $KUBECONFIG
+        sed -i "s#server: https://.*#server: https://127.0.0.1:6443#g" $KUBECONFIG
         if [ -n "$K3D_USING_HELPERS" ]; then
           docker cp $KUBECONFIG kubeconfig:/.kube/<<parameters.cluster-name>>
           sed -i "s#K3D_CLUSTER=.*#K3D_CLUSTER=<<parameters.cluster-name>>#g" helpers.sh
